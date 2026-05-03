@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import investmentService from '../services/investmentService';
 import '../styles/Detail.css';
 
 interface Investment {
@@ -26,7 +27,6 @@ interface Investment {
 function InvestmentDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const token = localStorage.getItem('token');
   const [investment, setInvestment] = useState<Investment | null>(null);
   const [editing, setEditing] = useState(false);
   const [formData, setFormData] = useState<Investment | null>(null);
@@ -36,12 +36,9 @@ function InvestmentDetail() {
     fetchInvestment();
   }, [id]);
 
-  const fetchInvestment = async () => {
+  const fetchInvestment = () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/investments/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await response.json();
+      const data = investmentService.getById(id!);
       setInvestment(data);
       setFormData(data);
     } catch (err) {
@@ -63,24 +60,12 @@ function InvestmentDetail() {
     }
   };
 
-  const handleUpdate = async () => {
+  const handleUpdate = () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/investments/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(formData),
-      });
-
-      if (response.ok) {
-        alert('Investment updated successfully!');
-        setInvestment(formData);
-        setEditing(false);
-      } else {
-        alert('Failed to update investment');
-      }
+      investmentService.update(id!, formData!);
+      alert('Investment updated successfully!');
+      setInvestment(formData);
+      setEditing(false);
     } catch (err) {
       console.error('Error:', err);
     }

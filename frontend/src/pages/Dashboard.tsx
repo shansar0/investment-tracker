@@ -1,38 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import investmentService from '../services/investmentService';
 import '../styles/Dashboard.css';
 
-interface Portfolio {
-  totalInvested: number;
-  currentValue: number;
-  totalGains: number;
-  roi: string;
-  totalInvestments: number;
-  byStatus: {
-    active: number;
-    exited: number;
-    loss: number;
-    pending: number;
-  };
-}
-
 function Dashboard() {
-  const [portfolio, setPortfolio] = useState<Portfolio | null>(null);
+  const [portfolio, setPortfolio] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-  const token = localStorage.getItem('token');
 
   useEffect(() => {
     fetchPortfolioSummary();
   }, []);
 
-  const fetchPortfolioSummary = async () => {
+  const fetchPortfolioSummary = () => {
     try {
-      const response = await fetch('http://localhost:5000/api/analytics/portfolio/summary', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await response.json();
+      const data = investmentService.getPortfolioSummary();
       setPortfolio(data);
     } catch (err) {
       console.error('Failed to fetch portfolio:', err);

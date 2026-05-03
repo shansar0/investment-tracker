@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import investmentService from '../services/investmentService';
 import '../styles/Form.css';
 
 function AddInvestment() {
   const navigate = useNavigate();
-  const token = localStorage.getItem('token');
   const [formData, setFormData] = useState({
     companyName: '',
     investmentAmount: '',
@@ -33,34 +33,33 @@ function AddInvestment() {
     }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
     const payload = {
-      ...formData,
+      companyName: formData.companyName,
       investmentAmount: parseFloat(formData.investmentAmount),
-      currentValue: parseFloat(formData.currentValue) || parseFloat(formData.investmentAmount),
+      investmentDate: formData.investmentDate,
+      category: formData.category,
+      marketSize: formData.marketSize,
+      revenueModel: formData.revenueModel,
       teamQuality: parseInt(formData.teamQuality),
       growthPotential: parseInt(formData.growthPotential),
+      traction: formData.traction,
+      competition: formData.competition,
+      riskLevel: formData.riskLevel,
       scalability: parseInt(formData.scalability),
+      vision: formData.vision,
+      exitStrategy: formData.exitStrategy,
+      currentValue: parseFloat(formData.currentValue) || parseFloat(formData.investmentAmount),
+      status: formData.status,
+      notes: formData.notes,
     };
 
     try {
-      const response = await fetch('http://localhost:5000/api/investments', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (response.ok) {
-        alert('Investment added successfully!');
-        navigate('/investments');
-      } else {
-        alert('Failed to add investment');
-      }
+      investmentService.create(payload);
+      alert('Investment added successfully!');
+      navigate('/investments');
     } catch (err) {
       console.error('Error:', err);
       alert('An error occurred');

@@ -1,23 +1,36 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import investmentService from '../services/investmentService';
 import '../styles/Navbar.css';
 
-interface NavbarProps {
-  user: any;
-  onLogout: () => void;
-}
-
-function Navbar({ user, onLogout }: NavbarProps) {
+function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
 
   const isActive = (path: string) => location.pathname === path;
 
-  const handleLogout = () => {
-    if (window.confirm('Are you sure you want to logout?')) {
-      onLogout();
-      navigate('/login');
-    }
+  const handleExport = () => {
+    investmentService.exportData();
+    alert('Your data has been exported!');
+  };
+
+  const handleImport = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.onchange = async (e: any) => {
+      const file = e.target.files[0];
+      if (file) {
+        const success = await investmentService.importData(file);
+        if (success) {
+          alert('Data imported successfully!');
+          window.location.reload();
+        } else {
+          alert('Failed to import data. Make sure it\'s a valid JSON file.');
+        }
+      }
+    };
+    input.click();
   };
 
   return (
@@ -52,9 +65,11 @@ function Navbar({ user, onLogout }: NavbarProps) {
         </li>
       </ul>
       <div className="navbar-user">
-        <span className="user-name">👤 {user?.name || 'User'}</span>
-        <button className="btn btn-logout" onClick={handleLogout}>
-          Logout
+        <button className="btn btn-small" onClick={handleExport} style={{ marginRight: '5px' }}>
+          📥 Export
+        </button>
+        <button className="btn btn-small" onClick={handleImport}>
+          📤 Import
         </button>
       </div>
     </nav>

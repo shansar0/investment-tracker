@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import investmentService from '../services/investmentService';
 import '../styles/Investments.css';
 
 interface Investment {
@@ -17,18 +18,14 @@ function Investments() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('All');
   const navigate = useNavigate();
-  const token = localStorage.getItem('token');
 
   useEffect(() => {
     fetchInvestments();
   }, []);
 
-  const fetchInvestments = async () => {
+  const fetchInvestments = () => {
     try {
-      const response = await fetch('http://localhost:5000/api/investments', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await response.json();
+      const data = investmentService.getAll();
       setInvestments(data);
     } catch (err) {
       console.error('Failed to fetch investments:', err);
@@ -37,13 +34,10 @@ function Investments() {
     }
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = (id: string) => {
     if (window.confirm('Are you sure you want to delete this investment?')) {
       try {
-        await fetch(`http://localhost:5000/api/investments/${id}`, {
-          method: 'DELETE',
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        investmentService.delete(id);
         setInvestments(investments.filter((inv) => inv._id !== id));
       } catch (err) {
         console.error('Failed to delete investment:', err);

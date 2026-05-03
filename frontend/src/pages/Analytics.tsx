@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import investmentService from '../services/investmentService';
 import '../styles/Analytics.css';
 
 interface ROI {
@@ -23,25 +24,15 @@ function Analytics() {
   const [roi, setROI] = useState<ROI[]>([]);
   const [timeline, setTimeline] = useState<Timeline[]>([]);
   const [loading, setLoading] = useState(true);
-  const token = localStorage.getItem('token');
 
   useEffect(() => {
     fetchAnalytics();
   }, []);
 
-  const fetchAnalytics = async () => {
+  const fetchAnalytics = () => {
     try {
-      const [roiRes, timelineRes] = await Promise.all([
-        fetch('http://localhost:5000/api/analytics/returns/roi', {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-        fetch('http://localhost:5000/api/analytics/growth/timeline', {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-      ]);
-
-      const roiData = await roiRes.json();
-      const timelineData = await timelineRes.json();
+      const roiData = investmentService.getRoiAnalysis();
+      const timelineData = investmentService.getGrowthTimeline();
 
       setROI(roiData);
       setTimeline(timelineData);
@@ -61,36 +52,40 @@ function Analytics() {
       <div className="analytics-section">
         <h2>Individual Investment ROI</h2>
         <div className="roi-table">
-          <table>
-            <thead>
-              <tr>
-                <th>Company</th>
-                <th>Invested</th>
-                <th>Current Value</th>
-                <th>Gains/Loss</th>
-                <th>ROI %</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {roi.map((item, idx) => {
-                const gainsClass = item.gains >= 0 ? 'positive' : 'negative';
-                const roiClass = parseFloat(item.roiPercentage) >= 0 ? 'positive' : 'negative';
-                return (
-                  <tr key={idx}>
-                    <td>{item.companyName}</td>
-                    <td>${item.investmentAmount.toLocaleString('en-US', { maximumFractionDigits: 2 })}</td>
-                    <td>${item.currentValue.toLocaleString('en-US', { maximumFractionDigits: 2 })}</td>
-                    <td className={gainsClass}>
-                      ${item.gains.toLocaleString('en-US', { maximumFractionDigits: 2 })}
-                    </td>
-                    <td className={roiClass}>{item.roiPercentage}%</td>
-                    <td><span className={`badge ${item.status.toLowerCase()}`}>{item.status}</span></td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+          {roi.length === 0 ? (
+            <p className="no-data">No investments yet. Add your first investment to see analytics!</p>
+          ) : (
+            <table>
+              <thead>
+                <tr>
+                  <th>Company</th>
+                  <th>Invested</th>
+                  <th>Current Value</th>
+                  <th>Gains/Loss</th>
+                  <th>ROI %</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {roi.map((item, idx) => {
+                  const gainsClass = item.gains >= 0 ? 'positive' : 'negative';
+                  const roiClass = parseFloat(item.roiPercentage) >= 0 ? 'positive' : 'negative';
+                  return (
+                    <tr key={idx}>
+                      <td>{item.companyName}</td>
+                      <td>${item.investmentAmount.toLocaleString('en-US', { maximumFractionDigits: 2 })}</td>
+                      <td>${item.currentValue.toLocaleString('en-US', { maximumFractionDigits: 2 })}</td>
+                      <td className={gainsClass}>
+                        ${item.gains.toLocaleString('en-US', { maximumFractionDigits: 2 })}
+                      </td>
+                      <td className={roiClass}>{item.roiPercentage}%</td>
+                      <td><span className={`badge ${item.status.toLowerCase()}`}>{item.status}</span></td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
         </div>
       </div>
 

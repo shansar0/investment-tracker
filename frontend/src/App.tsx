@@ -11,45 +11,27 @@ import Register from './pages/Register';
 import './App.css';
 
 function App() {
-  const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
-  const [user, setUser] = useState<any>(null);
+  const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    if (token) {
-      const userData = localStorage.getItem('user');
-      if (userData) {
-        setUser(JSON.parse(userData));
-      }
-    }
-  }, [token]);
+    setIsReady(true);
+  }, []);
 
-  const handleLogin = (token: string, userData: any) => {
-    setToken(token);
-    setUser(userData);
-    localStorage.setItem('token', token);
-    localStorage.setItem('user', JSON.stringify(userData));
-  };
-
-  const handleLogout = () => {
-    setToken(null);
-    setUser(null);
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-  };
+  if (!isReady) return <div className="loading">Loading...</div>;
 
   return (
     <Router>
       <div className="app">
-        {token && <Navbar user={user} onLogout={handleLogout} />}
+        <Navbar />
         <Routes>
-          <Route path="/login" element={token ? <Navigate to="/dashboard" /> : <Login onLogin={handleLogin} />} />
-          <Route path="/register" element={token ? <Navigate to="/dashboard" /> : <Register onLogin={handleLogin} />} />
-          <Route path="/dashboard" element={token ? <Dashboard /> : <Navigate to="/login" />} />
-          <Route path="/investments" element={token ? <Investments /> : <Navigate to="/login" />} />
-          <Route path="/investments/add" element={token ? <AddInvestment /> : <Navigate to="/login" />} />
-          <Route path="/investments/:id" element={token ? <InvestmentDetail /> : <Navigate to="/login" />} />
-          <Route path="/analytics" element={token ? <Analytics /> : <Navigate to="/login" />} />
-          <Route path="/" element={token ? <Navigate to="/dashboard" /> : <Navigate to="/login" />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/investments" element={<Investments />} />
+          <Route path="/investments/add" element={<AddInvestment />} />
+          <Route path="/investments/:id" element={<InvestmentDetail />} />
+          <Route path="/analytics" element={<Analytics />} />
+          <Route path="/" element={<Navigate to="/dashboard" />} />
         </Routes>
       </div>
     </Router>
